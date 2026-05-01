@@ -1,0 +1,50 @@
+package com.andriy_borukh.aplicaciongestiondelibros.ui.busqueda_remoto
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.GetLibroUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+//Le dice a Hilt cómo instanciar esta clase y garantiza que el ViewModel sobreviva a cambios de configuración (como rotar la pantalla)
+@HiltViewModel
+class BusquedaRemotoViewModel @Inject constructor(
+    private val getLibroUseCase: GetLibroUseCase
+): ViewModel() {
+
+    //Estado privado (mutable) para control interno del ViewModel
+    private val _uiState = MutableStateFlow(BusquedaRemotoState())
+
+    //Estado público (de solo lectura) para que la UI observe los cambios
+    val uiState: StateFlow<BusquedaRemotoState> = _uiState.asStateFlow()
+
+    //Cada vez que el usuario escriba el ViewModel recibe el evento y actualiza el estado
+    fun onTextoChanged(nuevoTexto: String) {
+        _uiState.update { it.copy(texto = nuevoTexto) }
+    }
+
+    //Realiza la busqueda de libros a traves del GetLibroUseCase que invoca a su vez el metodo que tiene el repositorio
+    //Añade al estado el listado de libros
+    fun buscarLibros() {
+        val queryActual = _uiState.value.texto
+        if(queryActual.isBlank()) return
+
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(estaCargando = true) }
+
+                val libros = getLibroUseCase(queryActual)
+
+                _uiState.update { it.copy(estaCargando = false, listaLibros = libros) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(estaCargando = false, mensajeError = "Error") }
+            }
+        }
+    }
+
+}
