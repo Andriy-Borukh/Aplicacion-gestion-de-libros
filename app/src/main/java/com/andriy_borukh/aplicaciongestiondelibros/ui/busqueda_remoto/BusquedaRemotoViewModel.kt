@@ -2,6 +2,8 @@ package com.andriy_borukh.aplicaciongestiondelibros.ui.busqueda_remoto
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.andriy_borukh.aplicaciongestiondelibros.domain.model.Libro
+import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.FavoritoUseCase
 import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.GetLibroUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,8 @@ import javax.inject.Inject
 //Le dice a Hilt cómo instanciar esta clase y garantiza que el ViewModel sobreviva a cambios de configuración (como rotar la pantalla)
 @HiltViewModel
 class BusquedaRemotoViewModel @Inject constructor(
-    private val getLibroUseCase: GetLibroUseCase
+    private val getLibroUseCase: GetLibroUseCase,
+    private val favoritoLibroUseCase: FavoritoUseCase
 ): ViewModel() {
 
     //Estado privado (mutable) para control interno del ViewModel
@@ -43,6 +46,20 @@ class BusquedaRemotoViewModel @Inject constructor(
                 _uiState.update { it.copy(estaCargando = false, listaLibros = libros) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(estaCargando = false, mensajeError = "Error") }
+            }
+        }
+    }
+
+    fun favoritoLibro(libro: Libro) {
+        viewModelScope.launch {
+            favoritoLibroUseCase(libro)
+
+            // Actualizamos la lista en memoria para que el corazón cambie de color
+            _uiState.update { estado ->
+                val listaActualizada = estado.listaLibros.map {
+                    if (it.id == libro.id) it.copy(favorito = !it.favorito) else it
+                }
+                estado.copy(listaLibros = listaActualizada)
             }
         }
     }

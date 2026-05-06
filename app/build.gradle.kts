@@ -63,6 +63,17 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    val room_version = "2.6.1"
+
+    // Librería principal y soporte para Corrutinas
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // Procesador de símbolos (genera el código de Room)
+    ksp("androidx.room:room-compiler:$room_version")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,5 +1,6 @@
 package com.andriy_borukh.aplicaciongestiondelibros.di
 
+import com.andriy_borukh.aplicaciongestiondelibros.data.local.LibroDAO
 import com.andriy_borukh.aplicaciongestiondelibros.data.remoto.Api
 import com.andriy_borukh.aplicaciongestiondelibros.domain.reposirory.LibroRepository
 import com.andriy_borukh.aplicaciongestiondelibros.domain.reposirory.LibroRepositoryImpl
@@ -37,8 +38,11 @@ object NetworkModule {
     @Provides
     @Singleton
     //Conecta la API con la logica de negocio
-    fun provideLibroRepository(api:Api): LibroRepository {
+    fun provideLibroRepository(
+        api:Api,
+        dao: LibroDAO
+    ): LibroRepository {
         //Con el objeto que se ha creado en el metodo anterior se lo pasamos al repositorio
-        return LibroRepositoryImpl(api)
+        return LibroRepositoryImpl(api, dao)
     }
 }

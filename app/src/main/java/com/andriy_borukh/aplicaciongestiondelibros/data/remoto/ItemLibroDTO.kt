@@ -3,18 +3,18 @@ package com.andriy_borukh.aplicaciongestiondelibros.data.remoto
 import com.google.gson.annotations.SerializedName
 
 /**
-   Clase que va a guardar los datos JSON de la api
-   Se usa la etiqueta SerializedName para poder poner el nombre del atributo en español
+ *  Clase que va a guardar los datos JSON de la api
+ *  Se usa la etiqueta SerializedName para poder poner el nombre del atributo en español
  */
 
-class LibroDTO (
+class ItemLibroDTO (
     @SerializedName("items")
     //La api devuelve un objeto que contiene la lista items
-    val itemLibroDTO: List<ItemLibroDTO>?
+    val libroDto: List<LibroDto>?
 ) {
     //Dentro de items hay mas objetos en los que se encuentra la id y volumeInfo que guarda
     // datos del libro
-    data class ItemLibroDTO (
+    data class LibroDto (
         val id: String,
         @SerializedName("volumeInfo")
         val infoLibro: InfoLibro

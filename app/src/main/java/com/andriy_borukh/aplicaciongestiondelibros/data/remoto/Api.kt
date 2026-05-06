@@ -21,5 +21,5 @@ interface Api {
         //Definicion del parametro de busqueda
         //Retrofit construira una url asi -> https://www.googleapis.com/books/v1/volumes?q=(texto que haya puesto el usuario para buscar el libro)
         @Query("q") query: String
-    ): LibroDTO     //Indica en que clase se guarda los datos que devuelve la api
+    ): ItemLibroDTO     //Indica en que clase se guarda los datos que devuelve la api
 }

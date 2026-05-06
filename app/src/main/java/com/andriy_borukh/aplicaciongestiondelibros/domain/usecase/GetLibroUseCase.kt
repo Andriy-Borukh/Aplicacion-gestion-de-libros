@@ -8,6 +8,7 @@ import javax.inject.Inject
 //Al igual que el Repositorio, esta clase no crea sus propias herramientas
 //Le dice a Hilt: "Para que yo pueda trabajar, necesito que me entregues alguien que sepa manejar el LibroRepository"
 //Hilt busca en el NetworkModule que vimos antes y le entrega la implementación necesaria.
+//Su objetivo es recuperar la lista de libros que el usuario ha buscado
 class GetLibroUseCase @Inject constructor(
     private val repository: LibroRepository
 ){
