@@ -40,4 +40,19 @@ class LibroRepositoryImpl
             listaEntities -> listaEntities.map { entity -> entity.toDomain() }
         }
     }
+
+    override suspend fun getLibroPorId(id: String): Libro? {
+        val libroLocal = dao.getLibroById(id)
+        if (libroLocal != null) {
+            return libroLocal.toDomain()
+        }
+
+        return try {
+            val respuesta = api.obtenerLibroPorId(id)
+            respuesta.toDomain()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.andriy_borukh.aplicaciongestiondelibros.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,7 @@ import com.andriy_borukh.aplicaciongestiondelibros.domain.model.Libro
 @Composable
 fun ItemLibro(
     libro: Libro,
+    onItemClick: (String) -> Unit,
     onFavoritoLibro: () -> Unit
 ) {
     Card(
@@ -42,7 +44,8 @@ fun ItemLibro(
         Row(
             modifier = Modifier
                 .padding(12.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable { onItemClick(libro.id) },
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Imagen de la portada usando Coil

@@ -32,7 +32,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "libros_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

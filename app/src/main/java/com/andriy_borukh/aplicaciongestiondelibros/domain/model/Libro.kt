@@ -5,5 +5,6 @@ data class Libro (
     val titulo: String,
     val autores: String,
     val imagen: String,
+    val descripcion: String,
     val favorito: Boolean = false
 )

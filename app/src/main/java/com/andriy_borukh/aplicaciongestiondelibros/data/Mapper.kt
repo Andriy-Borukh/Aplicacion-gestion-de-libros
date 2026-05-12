@@ -1,6 +1,7 @@
 package com.andriy_borukh.aplicaciongestiondelibros.data
 
 import com.andriy_borukh.aplicaciongestiondelibros.data.local.LibroEntity
+import com.andriy_borukh.aplicaciongestiondelibros.data.remoto.ItemLibroDTO
 import com.andriy_borukh.aplicaciongestiondelibros.data.remoto.ItemLibroDTO.LibroDto
 import com.andriy_borukh.aplicaciongestiondelibros.domain.model.Libro
 
@@ -13,7 +14,8 @@ fun LibroDto.toDomain(): Libro {
         id = this.id,
         titulo = this.infoLibro.titulo,
         autores = this.infoLibro.autores?.joinToString(", ") ?: "Desconocido",
-        imagen = this.infoLibro.linksImagen?.miniatura?.replace("http:", "https:") ?: ""
+        imagen = this.infoLibro.linksImagen?.miniatura?.replace("http:", "https:") ?: "",
+        descripcion = this.infoLibro.descripcion.toString()
     )
 }
 
@@ -24,7 +26,8 @@ fun LibroEntity.toDomain(): Libro {
         titulo = this.titulo,
         autores = this.autores,
         imagen = this.imagen,
-        favorito = true
+        favorito = true,
+        descripcion = this.descripcion
     )
 }
 
@@ -34,6 +37,7 @@ fun Libro.toEntity(): LibroEntity {
         id = this.id,
         titulo = this.titulo,
         autores = this.autores,
-        imagen = this.imagen
+        imagen = this.imagen,
+        descripcion = this.descripcion
     )
 }

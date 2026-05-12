@@ -7,4 +7,5 @@ interface LibroRepository {
     suspend fun buscarLibrosRemoto(query: String): List<Libro>
     suspend fun alternarFavorito(libro: Libro)
     fun obtenerTodosLosFavoritos(): Flow<List<Libro>>
+    suspend fun getLibroPorId(id: String): Libro?
 }

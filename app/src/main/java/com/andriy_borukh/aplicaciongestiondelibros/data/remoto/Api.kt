@@ -1,6 +1,7 @@
 package com.andriy_borukh.aplicaciongestiondelibros.data.remoto
 
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -22,4 +23,13 @@ interface Api {
         //Retrofit construira una url asi -> https://www.googleapis.com/books/v1/volumes?q=(texto que haya puesto el usuario para buscar el libro)
         @Query("q") query: String
     ): ItemLibroDTO     //Indica en que clase se guarda los datos que devuelve la api
+
+    /**
+     * Obtiene el detalle de un libro específico por su ID único.
+     * La URL resultante será: https://www.googleapis.com/books/v1/volumes/{libroId}
+     */
+    @GET("volumes/{libroId}")
+    suspend fun obtenerLibroPorId(
+        @Path("libroId") id: String
+    ): ItemLibroDTO.LibroDto // Aquí devuelves el objeto del libro directamente
 }

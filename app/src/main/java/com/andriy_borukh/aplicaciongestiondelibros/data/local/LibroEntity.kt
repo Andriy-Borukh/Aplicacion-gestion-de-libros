@@ -8,5 +8,6 @@ data class LibroEntity (
     @PrimaryKey val id: String,
     val titulo: String,
     val autores: String,
-    val imagen: String
+    val imagen: String,
+    val descripcion: String
 )

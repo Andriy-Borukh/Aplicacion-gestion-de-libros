@@ -1,11 +1,13 @@
 package com.andriy_borukh.aplicaciongestiondelibros.ui.busqueda_remoto
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.andriy_borukh.aplicaciongestiondelibros.domain.model.Libro
 import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.FavoritoUseCase
 import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.GetLibroUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +25,8 @@ class BusquedaRemotoViewModel @Inject constructor(
     //Estado privado (mutable) para control interno del ViewModel
     private val _uiState = MutableStateFlow(BusquedaRemotoState())
 
+    private var searchJob: Job? = null
+
     //Estado público (de solo lectura) para que la UI observe los cambios
     val uiState: StateFlow<BusquedaRemotoState> = _uiState.asStateFlow()
 
@@ -37,7 +41,9 @@ class BusquedaRemotoViewModel @Inject constructor(
         val queryActual = _uiState.value.texto
         if(queryActual.isBlank()) return
 
-        viewModelScope.launch {
+        searchJob?.cancel()
+
+        searchJob = viewModelScope.launch {
             try {
                 _uiState.update { it.copy(estaCargando = true) }
 
@@ -45,6 +51,7 @@ class BusquedaRemotoViewModel @Inject constructor(
 
                 _uiState.update { it.copy(estaCargando = false, listaLibros = libros) }
             } catch (e: Exception) {
+                Log.e("API_ERROR", "Error buscando libros: ${e.message}", e)
                 _uiState.update { it.copy(estaCargando = false, mensajeError = "Error") }
             }
         }

@@ -31,4 +31,6 @@ interface LibroDAO {
     @Query("SELECT EXISTS(SELECT * FROM favoritos WHERE id = :id)")
     suspend fun esFavorito(id: String): Boolean
 
+    @Query("SELECT * FROM favoritos WHERE id = :id")
+    suspend fun getLibroById(id: String): LibroEntity?
 }

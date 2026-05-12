@@ -74,6 +74,10 @@ fun BusquedaRemotoScreen(
                 Text(text = "Buscar Libros")
             }
 
+            if (state.estaCargando) {
+                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             LazyColumn(
@@ -83,6 +87,9 @@ fun BusquedaRemotoScreen(
                 items(state.listaLibros) { libro ->
                     ItemLibro(
                         libro = libro,
+                        onItemClick = {
+                            id -> navController.navigate(Pantalla.Detalle.crearRuta(id))
+                        },
                         onFavoritoLibro = {
                             viewModel.favoritoLibro(libro)
                             scope.launch {
