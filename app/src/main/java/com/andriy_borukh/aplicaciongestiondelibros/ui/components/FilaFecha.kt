@@ -19,23 +19,61 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Componente interactivo que muestra una etiqueta y una fecha formateada
+ * Diseñado para integrarse en formularios o pantallas de detalles
+ *
+ * label El título de la fila (ej: "Fecha de inicio")
+ * fecha El objeto Date a mostrar. Si es null, muestra un texto por defecto
+ * onClick Acción que se ejecuta al pulsar cualquier parte de la fila
+ */
 @Composable
-fun FilaFecha(label: String, fecha: Date?, onClick: () -> Unit) {
-    val formatter = remember { SimpleDateFormat("dd 'de' MMMM, yyyy", Locale.getDefault()) }
+fun FilaFecha(
+    label: String,
+    fecha: Date?,
+    onClick: () -> Unit
+) {
+    /**
+     * Optimizamos el formateador con 'remember'
+     * SimpleDateFormat es una operación costosa; al recordarlo, evitamos crear
+     * una instancia nueva en cada redibujado (recomposición) de la pantalla
+     */
+    val formatter = remember {
+        SimpleDateFormat("dd 'de' MMMM, yyyy", Locale.getDefault())
+    }
+
+    // Si la fecha existe, se formatea; si no, se muestra un valor informativo
     val fechaTexto = fecha?.let { formatter.format(it) } ?: "Sin asignar"
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            // Hacemos que toda la fila sea clicable para mejorar la accesibilidad
             .clickable { onClick() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column {
-            Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
-            Text(text = fechaTexto, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            // Etiqueta secundaria (pequeña y gris)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.Gray
+            )
+            // Valor principal (la fecha formateada)
+            Text(
+                text = fechaTexto,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold
+            )
         }
-        Text(text = "Editar", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+
+        // Indicador visual de acción ("Editar")
+        Text(
+            text = "Editar",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }

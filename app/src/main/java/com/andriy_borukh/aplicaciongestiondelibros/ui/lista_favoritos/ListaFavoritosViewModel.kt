@@ -3,7 +3,6 @@ package com.andriy_borukh.aplicaciongestiondelibros.ui.lista_favoritos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.andriy_borukh.aplicaciongestiondelibros.domain.model.Libro
-import com.andriy_borukh.aplicaciongestiondelibros.domain.reposirory.LibroRepository
 import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.EliminarTodosUseCase
 import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.FavoritoUseCase
 import com.andriy_borukh.aplicaciongestiondelibros.domain.usecase.GetFavoritosUseCase
@@ -17,7 +16,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-//Le dice a Hilt cómo instanciar esta clase y garantiza que el ViewModel sobreviva a cambios de configuración (como rotar la pantalla)
+/**
+ * ViewModel encargado de gestionar la lógica de la biblioteca personal.
+ * Utiliza programación reactiva para mantener la UI sincronizada con la base de datos.
+ */
 @HiltViewModel
 class ListaFavoritosViewModel @Inject constructor(
     private val getFavoritosUseCase: GetFavoritosUseCase,
@@ -25,27 +27,31 @@ class ListaFavoritosViewModel @Inject constructor(
     private val eliminarTodosUseCase: EliminarTodosUseCase
 ): ViewModel() {
 
-    //Es el contenedor privado donde se guarda el estado actual de la pantalla
-    // Al ser mutable, solo el ViewModel puede cambiar su contenido
+    // Estado para la carga inicial o estados generales de la pantalla
     private val _uiState = MutableStateFlow(ListaFavoritosState())
-    private val _texto_busqueda = MutableStateFlow("")
-
-    //Expone una versión de solo lectura
-    //La UI observa los cambios pero no puede modificarlos directamente
     val uiState = _uiState.asStateFlow()
+
+    // Estado independiente para el texto de búsqueda (Buffer de entrada)
+    private val _texto_busqueda = MutableStateFlow("")
     val texto = _texto_busqueda.asStateFlow()
 
     init {
         observarFavoritos()
     }
 
+    /**
+     * FLUJO COMBINADO: Es el núcleo de la pantalla.
+     * Combina el texto de búsqueda con la lista real de la base de datos.
+     * Si el usuario escribe o si un libro se borra, este flujo se recalcula automáticamente.
+     */
     val favoritosFiltrados = combine(
         _texto_busqueda,
-        getFavoritosUseCase()
+        getFavoritosUseCase() // Flow directo desde Room
     ) { texto, lista ->
         if (texto.isBlank()) {
             lista
         } else {
+            // Filtrado local insensible a mayúsculas/minúsculas
             lista.filter { libro ->
                 libro.titulo.contains(texto, ignoreCase = true) ||
                         libro.autores.contains(texto, ignoreCase = true)
@@ -53,34 +59,41 @@ class ListaFavoritosViewModel @Inject constructor(
         }
     }.stateIn(
         scope = viewModelScope,
+        // Mantiene el flujo activo 5 segundos después de que la UI desaparezca (optimización de recursos)
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
 
+    /**
+     * Actualiza el valor del filtro de búsqueda.
+     */
     fun onTextoBusquedaChanged(nuevoTexto: String) {
         _texto_busqueda.value = nuevoTexto
     }
 
-    //Si el usuario elimina un libro, Room detecta el cambio, el Flow emite una nueva lista y el ViewModel actualiza el uiState
-    //La pantalla se refresca sola sin que el usuario tenga que hacer nada
+    /**
+     * Suscripción manual a la base de datos para actualizar el estado general (opcional si usas favoritosFiltrados).
+     */
     private fun observarFavoritos() {
-        //Asegura que esta escucha se detenga automáticamente si el usuario cierra la pantalla evitando fugas de memoria
         viewModelScope.launch {
-            //Al usar un Flow que viene desde Room el ViewModel se queda escuchando
             getFavoritosUseCase().collect { lista ->
                 _uiState.update { it.copy(listaFavoritos = lista) }
             }
         }
     }
 
-    //Cuando el usuario pulsa el botón en la UI, se dispara esta corrutina
-    //Llama al FavoritoUseCase, el cual probablemente cambiará el estado de favorito a false en la base de datos
+    /**
+     * Elimina un libro específico. Room notificará el cambio y la lista se actualizará sola.
+     */
     fun eliminarDeFavoritos(libro: Libro) {
         viewModelScope.launch {
             favoritoUseCase(libro)
         }
     }
 
+    /**
+     * Acción masiva para limpiar la base de datos local.
+     */
     fun eliminarTodoFavoritos() {
         viewModelScope.launch {
             eliminarTodosUseCase()

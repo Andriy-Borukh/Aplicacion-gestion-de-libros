@@ -32,12 +32,15 @@ interface LibroDAO {
     @Query("SELECT EXISTS(SELECT * FROM favoritos WHERE id = :id)")
     suspend fun esFavorito(id: String): Boolean
 
+    // Devuelve la entidad segun la id
     @Query("SELECT * FROM favoritos WHERE id = :id")
     suspend fun getLibroById(id: String): LibroEntity?
 
+    // Actualiza la entidad
     @Update
     suspend fun actualizarLibro(libro: LibroEntity)
 
+    // Elimina todos los libros guardados en la base de datos
     @Query("DELETE FROM favoritos")
     suspend fun eliminarTodosFavoritos()
 

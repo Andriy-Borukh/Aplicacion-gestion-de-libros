@@ -13,6 +13,9 @@ interface Api {
     //Se defina la url base, es la url que se uasara para todas las llamadas a la api
     companion object{
         const val BASE_URL = "https://www.googleapis.com/books/v1/"
+        // La clave aqui sirve para poder realizar mas peticiones
+        // Sino tuviese la clave después de unas pocas consultas el servidor te envia un error 429 en el que
+        // tienes restringido el acceso a la api durante bastante tiempo
         const val API_KEY = "AIzaSyDWE_Kdm2GCt2yCDjV77Zuxo4eM3HdQcSU"
     }
 
@@ -23,6 +26,7 @@ interface Api {
         //Definicion del parametro de busqueda
         //Retrofit construira una url asi -> https://www.googleapis.com/books/v1/volumes?q=(texto que haya puesto el usuario para buscar el libro)
         @Query("q") query: String,
+        // Añado la clave para que no me de error 429
         @Query("key") apiKey: String = API_KEY
     ): ItemLibroDTO     //Indica en que clase se guarda los datos que devuelve la api
 
@@ -33,6 +37,7 @@ interface Api {
     @GET("volumes/{libroId}")
     suspend fun obtenerLibroPorId(
         @Path("libroId") id: String,
+        // Añado la clave para que no me de error 429
         @Query("key") apiKey: String = API_KEY
     ): ItemLibroDTO.LibroDto // Aquí devuelves el objeto del libro directamente
 }

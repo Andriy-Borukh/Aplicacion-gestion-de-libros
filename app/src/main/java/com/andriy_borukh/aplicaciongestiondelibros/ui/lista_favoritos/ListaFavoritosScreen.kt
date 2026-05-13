@@ -22,17 +22,25 @@ import androidx.navigation.NavController
 import com.andriy_borukh.aplicaciongestiondelibros.ui.components.ItemLibro
 import com.andriy_borukh.aplicaciongestiondelibros.ui.navigation.Pantalla
 
+/**
+ * Pantalla que muestra la colección local de libros guardados por el usuario
+ * Permite la gestión de la biblioteca: búsqueda local, eliminación individual y borrado masivo
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaFavoritosScreen(
     navController: NavController,
     viewModel: ListaFavoritosViewModel = hiltViewModel()
 ) {
+    // Suscripción a los flujos de datos del ViewModel (State Flows)
     val favoritos by viewModel.favoritosFiltrados.collectAsState()
     val textoBusqueda by viewModel.texto.collectAsState()
     val context = LocalContext.current
 
-    // Estado para el diálogo de confirmación de borrado total
+    /**
+     * Estado local para el Diálogo de Confirmación
+     * Se mantiene en la UI porque es un estado efímero que no afecta a la lógica de negocio
+     */
     var mostrarDialogoBorrado by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -48,7 +56,7 @@ fun ListaFavoritosScreen(
                     }
                 },
                 actions = {
-                    // Solo mostramos el botón de borrar todo si hay libros en la lista
+                    // Acción de "Destructive Path": Solo visible si hay contenido que borrar
                     if (favoritos.isNotEmpty()) {
                         IconButton(onClick = { mostrarDialogoBorrado = true }) {
                             Icon(
@@ -65,11 +73,11 @@ fun ListaFavoritosScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
+                .background(Color(0xFFF5F5F5)) // Gris claro para resaltar las Cards blancas
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // --- 1. BUSCADOR LOCAL ---
+            // --- 1. BUSCADOR LOCAL: Filtrado en tiempo real sobre la base de datos ---
             OutlinedTextField(
                 value = textoBusqueda,
                 onValueChange = { viewModel.onTextoBusquedaChanged(it) },
@@ -82,18 +90,21 @@ fun ListaFavoritosScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- 2. LISTADO O MENSAJES DE ESTADO ---
+            // --- 2. GESTIÓN DE ESTADOS DE LA LISTA ---
             if (favoritos.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     if (textoBusqueda.isBlank()) {
+                        // Caso: La base de datos está vacía
                         Text(text = "Aún no tienes libros guardados.", color = Color.Gray)
                     } else {
-                        // CASO: No hay coincidencias en local, sugerimos buscar en Internet
+                        /**
+                         * Caso: El filtro no devuelve resultados
+                         * UX Proactiva: Sugerimos al usuario buscar el término en la API global
+                         */
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "No se encontró '$textoBusqueda' en tus favoritos.", color = Color.Gray)
+                            Text(text = "No se encontró '$textoBusqueda' localmente.", color = Color.Gray)
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(onClick = {
-                                // Navegamos a la búsqueda remota pasando el texto actual
                                 navController.navigate(Pantalla.Busqueda.crearRuta(textoBusqueda))
                             }) {
                                 Text("Buscar '$textoBusqueda' en Internet")
@@ -102,6 +113,7 @@ fun ListaFavoritosScreen(
                     }
                 }
             } else {
+                // Listado optimizado para grandes cantidades de datos
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -110,6 +122,7 @@ fun ListaFavoritosScreen(
                         ItemLibro(
                             libro = libro,
                             onItemClick = { id ->
+                                // Navegación a la edición de metadatos locales (página, notas, etc.)
                                 navController.navigate(Pantalla.DetalleLocal.crearRuta(id))
                             },
                             onFavoritoLibro = {
@@ -122,12 +135,12 @@ fun ListaFavoritosScreen(
             }
         }
 
-        // --- 3. DIÁLOGOS (Fuera del flujo de la Column) ---
+        // --- 3. DIÁLOGOS DE SEGURIDAD ---
         if (mostrarDialogoBorrado) {
             AlertDialog(
                 onDismissRequest = { mostrarDialogoBorrado = false },
                 title = { Text("¿Eliminar toda tu biblioteca?") },
-                text = { Text("Se borrarán todos los libros guardados y sus notas. Esta acción no se puede deshacer.") },
+                text = { Text("Esta acción borrará permanentemente todos tus libros, notas y progresos.") },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -136,6 +149,7 @@ fun ListaFavoritosScreen(
                             Toast.makeText(context, "Biblioteca vaciada", Toast.LENGTH_SHORT).show()
                         }
                     ) {
+                        // El color 'error' (rojo) indica una acción irreversible
                         Text("ELIMINAR TODO", color = MaterialTheme.colorScheme.error)
                     }
                 },

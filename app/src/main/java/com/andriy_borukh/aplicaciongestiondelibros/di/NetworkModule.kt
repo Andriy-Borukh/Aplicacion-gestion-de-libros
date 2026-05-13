@@ -16,17 +16,23 @@ import javax.inject.Singleton
  * Dice como se crean y reparten los objetos obtenidos por la API
  */
 
-//Indica que es una fabrica y define las instrucciones para crear objetos
+
+/**
+ * Módulo de Hilt encargado de proveer las dependencias relacionadas con la red
+ * y la infraestructura de datos
+ */
+
 @Module
-//Define cuanto tiempo viven los objetos creados
-//Singleton significa que los objetos viven mientras este la aplicacion abierta
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    //Indica que el metodo devuelve una dependencia
+
+    /**
+     * Configura y provee la instancia de Retrofit para realizar peticiones HTTP
+     * @Singleton: Mantiene una única instancia del cliente de red para optimizar recursos
+     */
+
     @Provides
     @Singleton
-    //Esta funcion aplica la url definida en la interfaz Api y crea el codigo necesario
-    // para hacer las peticiones
     fun provideApi(): Api {
         return Retrofit.Builder()
             .baseUrl(Api.BASE_URL)
@@ -35,14 +41,20 @@ object NetworkModule {
             .create(Api::class.java)
     }
 
+    /**
+     * Provee la implementación del Repositorio
+     * Hilt inyecta automáticamente la 'Api' (creada arriba) y el 'LibroDAO' (creado en DatabaseModule)
+     *
+     * Al devolver la interfaz 'LibroRepository' pero instanciar 'LibroRepositoryImpl'
+     * aplicamos el principio de inversión de dependencias
+     */
+
     @Provides
     @Singleton
-    //Conecta la API con la logica de negocio
     fun provideLibroRepository(
         api:Api,
         dao: LibroDAO
     ): LibroRepository {
-        //Con el objeto que se ha creado en el metodo anterior se lo pasamos al repositorio
         return LibroRepositoryImpl(api, dao)
     }
 }

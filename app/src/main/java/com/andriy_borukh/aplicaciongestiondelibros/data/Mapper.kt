@@ -15,7 +15,7 @@ fun LibroDto.toDomain(): Libro {
         titulo = this.infoLibro.titulo,
         autores = this.infoLibro.autores?.joinToString(", ") ?: "Desconocido",
         imagen = this.infoLibro.linksImagen?.miniatura?.replace("http:", "https:") ?: "",
-        descripcion = this.infoLibro.descripcion.toString(),
+        descripcion = this.infoLibro.descripcion ?: "No se ha encontrado una descripción",
         fechaInicio = null,
         fechaFin = null,
         paginaActual = null,
