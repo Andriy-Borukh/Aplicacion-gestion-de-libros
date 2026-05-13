@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.map
 
 class LibroRepositoryImpl
     (
-    //Objeto creado por NetworkModule
     private val api: Api,
     private val dao: LibroDAO
 ): LibroRepository {
@@ -47,12 +46,16 @@ class LibroRepositoryImpl
             return libroLocal.toDomain()
         }
 
-        return try {
-            val respuesta = api.obtenerLibroPorId(id)
-            respuesta.toDomain()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        val respuesta = api.obtenerLibroPorId(id)
+        return respuesta.toDomain()
+    }
+
+    override suspend fun actualizarLibro(libro: Libro) {
+        val entity = libro.toEntity()
+        dao.actualizarLibro(entity)
+    }
+
+    override suspend fun eliminarTodoFavoritos() {
+        dao.eliminarTodosFavoritos()
     }
 }

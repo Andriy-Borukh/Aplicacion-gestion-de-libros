@@ -1,10 +1,17 @@
 package com.andriy_borukh.aplicaciongestiondelibros.ui.navigation
 
+import androidx.room.Query
+
 //Rutas de navegacion
 sealed class Pantalla(val ruta: String) {
-    object Busqueda : Pantalla("busqueda")
+    object Busqueda : Pantalla("busqueda?query={query}") {
+        fun crearRuta(query: String) = "busqueda?query=$query"
+    }
     object Favoritos : Pantalla("favoritos")
-    object Detalle : Pantalla("vista_detalle/{libroId}") {
+    object DetalleRemoto : Pantalla("vista_detalle/{libroId}") {
         fun crearRuta(libroID: String) = "vista_detalle/$libroID"
+    }
+    object DetalleLocal : Pantalla("detalle_local/{libroId}") {
+        fun crearRuta(libroID: String) = "detalle_local/$libroID"
     }
 }

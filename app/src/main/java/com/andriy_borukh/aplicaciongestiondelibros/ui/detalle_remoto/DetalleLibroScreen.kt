@@ -1,34 +1,21 @@
 package com.andriy_borukh.aplicaciongestiondelibros.ui.detalle_remoto
 
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.getValue
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.andriy_borukh.aplicaciongestiondelibros.R
+import com.andriy_borukh.aplicaciongestiondelibros.ui.error.ErrorEstandar // Importamos tu componente
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +36,7 @@ fun DetalleLibroRemotoScreen(
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(libroId) {
+        Log.d("DEBUG", "Solicitando detalle libro: $libroId")
         viewModel.cargarDetalle(libroId)
     }
 
@@ -65,20 +55,34 @@ fun DetalleLibroRemotoScreen(
                 )
             )
         }
-    ) { padding ->
-        if (state.isLoading) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+    ) { paddingValues ->
+        // Usamos un Box para manejar los estados igual que en Busqueda
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (state.isLoading) {
+                // ESTADO 1: Cargando
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-        } else {
-            state.libro?.let { libro ->
+            else if (state.error != null) {
+                // ESTADO 2: Error (Usando tu componente ErrorEstandar)
+                ErrorEstandar(
+                    error = state.error!!,
+                    onReintentar = { viewModel.cargarDetalle(libroId) },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            else if (state.libro != null) {
+                // ESTADO 3: Éxito (Contenido del libro)
+                val libro = state.libro!!
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .verticalScroll(rememberScrollState()) // Permite scroll si el texto es largo
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    // --- Sección de Imagen de Cabecera ---
+                    // --- Sección Imagen ---
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -87,14 +91,16 @@ fun DetalleLibroRemotoScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
-                            model = libro.imagen, // Asegúrate de que tu modelo tenga este campo
+                            model = libro.imagen,
                             contentDescription = "Portada de ${libro.titulo}",
                             modifier = Modifier.fillMaxHeight().padding(16.dp),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Fit,
+                            placeholder = painterResource(R.drawable.ic_book_placeholder),
+                            error = painterResource(R.drawable.ic_book_placeholder)
                         )
                     }
 
-                    // --- Sección de Información Principal ---
+                    // --- Sección Información ---
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -116,7 +122,6 @@ fun DetalleLibroRemotoScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-                        // --- Descripción ---
                         Text(
                             text = "Sinopsis",
                             style = MaterialTheme.typography.titleLarge,
@@ -125,7 +130,7 @@ fun DetalleLibroRemotoScreen(
                         )
 
                         Text(
-                            text = libro.descripcion ?: "No hay descripción disponible para este libro.",
+                            text = libro.descripcion ?: "Sin descripción disponible.",
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Justify,
                             lineHeight = 24.sp

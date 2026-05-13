@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -33,4 +34,11 @@ interface LibroDAO {
 
     @Query("SELECT * FROM favoritos WHERE id = :id")
     suspend fun getLibroById(id: String): LibroEntity?
+
+    @Update
+    suspend fun actualizarLibro(libro: LibroEntity)
+
+    @Query("DELETE FROM favoritos")
+    suspend fun eliminarTodosFavoritos()
+
 }

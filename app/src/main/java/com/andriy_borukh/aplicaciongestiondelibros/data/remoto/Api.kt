@@ -13,6 +13,7 @@ interface Api {
     //Se defina la url base, es la url que se uasara para todas las llamadas a la api
     companion object{
         const val BASE_URL = "https://www.googleapis.com/books/v1/"
+        const val API_KEY = "AIzaSyDWE_Kdm2GCt2yCDjV77Zuxo4eM3HdQcSU"
     }
 
     //Indica que al hacer la llamada a la api se realizara mediante la cabecera GET
@@ -21,7 +22,8 @@ interface Api {
     suspend fun buscarLibros(
         //Definicion del parametro de busqueda
         //Retrofit construira una url asi -> https://www.googleapis.com/books/v1/volumes?q=(texto que haya puesto el usuario para buscar el libro)
-        @Query("q") query: String
+        @Query("q") query: String,
+        @Query("key") apiKey: String = API_KEY
     ): ItemLibroDTO     //Indica en que clase se guarda los datos que devuelve la api
 
     /**
@@ -30,6 +32,7 @@ interface Api {
      */
     @GET("volumes/{libroId}")
     suspend fun obtenerLibroPorId(
-        @Path("libroId") id: String
+        @Path("libroId") id: String,
+        @Query("key") apiKey: String = API_KEY
     ): ItemLibroDTO.LibroDto // Aquí devuelves el objeto del libro directamente
 }

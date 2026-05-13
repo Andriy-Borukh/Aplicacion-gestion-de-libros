@@ -8,4 +8,6 @@ interface LibroRepository {
     suspend fun alternarFavorito(libro: Libro)
     fun obtenerTodosLosFavoritos(): Flow<List<Libro>>
     suspend fun getLibroPorId(id: String): Libro?
+    suspend fun actualizarLibro(libro: Libro)
+    suspend fun eliminarTodoFavoritos()
 }

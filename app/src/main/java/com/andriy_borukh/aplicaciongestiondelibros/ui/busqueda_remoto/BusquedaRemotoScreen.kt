@@ -16,11 +16,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.andriy_borukh.aplicaciongestiondelibros.ui.components.ItemLibro
 import com.andriy_borukh.aplicaciongestiondelibros.ui.navigation.Pantalla
+import com.andriy_borukh.aplicaciongestiondelibros.ui.error.ErrorEstandar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BusquedaRemotoScreen(
+    queryInicial: String="",
     navController: NavController,
     viewModel: BusquedaRemotoViewModel = hiltViewModel()
 ) {
@@ -57,6 +59,7 @@ fun BusquedaRemotoScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Buscador
             OutlinedTextField(
                 value = state.texto,
                 onValueChange = { viewModel.onTextoChanged(it) },
@@ -74,31 +77,45 @@ fun BusquedaRemotoScreen(
                 Text(text = "Buscar Libros")
             }
 
-            if (state.estaCargando) {
-                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(state.listaLibros) { libro ->
-                    ItemLibro(
-                        libro = libro,
-                        onItemClick = {
-                            id -> navController.navigate(Pantalla.Detalle.crearRuta(id))
-                        },
-                        onFavoritoLibro = {
-                            viewModel.favoritoLibro(libro)
-                            scope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                val mensaje = if (!libro.favorito) "Añadido a favoritos" else "Eliminado de favoritos"
-                                snackbarHostState.showSnackbar(mensaje)
-                            }
-                        }
+            // --- GESTIÓN DE ESTADOS (Cargando, Error, Lista) ---
+            Box(modifier = Modifier.fillMaxSize()) {
+
+                if (state.estaCargando) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                // Mostramos el error si existe
+                else if (state.error != null) {
+                    ErrorEstandar(
+                        error = state.error!!,
+                        onReintentar = { viewModel.buscarLibros() },
+                        modifier = Modifier.align(Alignment.Center)
                     )
+                }
+                // Mostramos la lista si no hay error y hay libros
+                else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.listaLibros) { libro ->
+                            ItemLibro(
+                                libro = libro,
+                                onItemClick = { id ->
+                                    navController.navigate(Pantalla.DetalleRemoto.crearRuta(id))
+                                },
+                                onFavoritoLibro = {
+                                    viewModel.favoritoLibro(libro)
+                                    scope.launch {
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        val mensaje = if (!libro.favorito) "Añadido a favoritos" else "Eliminado de favoritos"
+                                        snackbarHostState.showSnackbar(mensaje)
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

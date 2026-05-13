@@ -15,7 +15,12 @@ fun LibroDto.toDomain(): Libro {
         titulo = this.infoLibro.titulo,
         autores = this.infoLibro.autores?.joinToString(", ") ?: "Desconocido",
         imagen = this.infoLibro.linksImagen?.miniatura?.replace("http:", "https:") ?: "",
-        descripcion = this.infoLibro.descripcion.toString()
+        descripcion = this.infoLibro.descripcion.toString(),
+        fechaInicio = null,
+        fechaFin = null,
+        paginaActual = null,
+        valoracion = null,
+        comentario = null
     )
 }
 
@@ -27,7 +32,12 @@ fun LibroEntity.toDomain(): Libro {
         autores = this.autores,
         imagen = this.imagen,
         favorito = true,
-        descripcion = this.descripcion
+        descripcion = this.descripcion,
+        fechaInicio = this.fechInicio,
+        fechaFin = this.fechaFin,
+        paginaActual = this.paginaActual,
+        valoracion = this.valoracion,
+        comentario = this.comentario
     )
 }
 
@@ -38,6 +48,11 @@ fun Libro.toEntity(): LibroEntity {
         titulo = this.titulo,
         autores = this.autores,
         imagen = this.imagen,
-        descripcion = this.descripcion
+        descripcion = this.descripcion,
+        fechInicio = this.fechaInicio,
+        fechaFin = this.fechaFin,
+        valoracion = this.valoracion,
+        paginaActual = this.paginaActual,
+        comentario = this.comentario
     )
 }
